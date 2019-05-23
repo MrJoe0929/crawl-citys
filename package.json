@@ -11,6 +11,8 @@
   "dependencies": {
     "cheerio": "^0.22.0",
     "superagent": "^3.3.2",
-    "iconv-lite": "*"
+    "iconv-lite": "*",
+    "request": "*",
+    "async": "*"
   }
 }

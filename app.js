@@ -7,9 +7,9 @@ const iconv = require('iconv-lite');
 const async = require('async');
 
 // 文件存储位置
-const file = path.join(__dirname + '/data/city_new3.json');
+const file = path.join(__dirname + '/data/data.json');
 // 日志
-const fileLog = path.join(__dirname + '/log/log.text');
+const fileLog = path.join(__dirname + '/log/log.txt');
 // 国家统计局城市 2018年
 const city_url = 'http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/2018/';
 
@@ -40,13 +40,12 @@ function getCitys (url, arr, level, text, callback) {
      *  3 县/区级
      *  4 需自己去看
      */
-    let l = 2;
+    let l = 3;
     if (level > l) {
         write(arrAll);
         return;
     }
     i++;
-    console.log("TCL: getCitys -> i  程序执行---", i);
     // 存储本轮中产生的子请求
     let task = [];
     request(url, function (err, res, body) {
@@ -54,6 +53,7 @@ function getCitys (url, arr, level, text, callback) {
          * 判断是否请求成功，失败的话，重新提交本次请求
          */
         if (!body) {
+            console.log('重试');
             setTimeout(() => {
                 getCitys(url, arr, level, text, callback);
             }, 500);
@@ -64,6 +64,7 @@ function getCitys (url, arr, level, text, callback) {
             });
             return;
         }
+        console.log('----' + text + '开始');
         // 设置编码格式
         let html = iconv.decode(body, 'gb2312');
         let $ = cheerio.load(html, { decodeEntities: false });
@@ -116,7 +117,6 @@ function getCitys (url, arr, level, text, callback) {
          */
         async.waterfall(task, function (err, result) {
             if (err) return console.log(err);
-            console.log(text + '中的城市，共' + newArr.length + '个');
         })
     });
 }
@@ -129,14 +129,12 @@ process.on("exit", function (code) {
 });
 // 写入文件
 function write (contents) {
-    console.log('写文件')
     fs.writeFile(file, JSON.stringify(contents, null, 4), function (err) {
-        console.log('kaishi')
         if (err) {
             console.error(err);
             process.exit(1);
         } else {
-            console.log('数据写入成功！')
+            // console.log('数据写入成功！')
         }
     });
 }
