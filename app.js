@@ -23,7 +23,6 @@ function request (url, callback) {
 }
 // 存储区  存储所有的城市
 let arrAll = [];
-let i = 0;
 /**
  * 
  * @param {string} url 请求的html
@@ -33,6 +32,7 @@ let i = 0;
  * @param {function} callback 回调函数
  */
 function getCitys (url, arr, level, text, callback) {
+    console.log("TCL: getCitys -> url", url)
     /**
      *  level 请求的级数
      *  1 省级
@@ -45,7 +45,6 @@ function getCitys (url, arr, level, text, callback) {
         write(arrAll);
         return;
     }
-    i++;
     // 存储本轮中产生的子请求
     let task = [];
     request(url, function (err, res, body) {
@@ -53,7 +52,6 @@ function getCitys (url, arr, level, text, callback) {
          * 判断是否请求成功，失败的话，重新提交本次请求
          */
         if (!body) {
-            console.log('重试');
             setTimeout(() => {
                 getCitys(url, arr, level, text, callback);
             }, 500);
@@ -64,7 +62,6 @@ function getCitys (url, arr, level, text, callback) {
             });
             return;
         }
-        console.log('----' + text + '开始');
         // 设置编码格式
         let html = iconv.decode(body, 'gb2312');
         let $ = cheerio.load(html, { decodeEntities: false });
@@ -110,7 +107,7 @@ function getCitys (url, arr, level, text, callback) {
         // 延迟开启下一个请求的时间，避免请求过于频繁
         setTimeout(function () {
             callback && callback(null);
-        }, 5000);
+        }, randomNum(3000, 10000));
         /**
          *  等待本轮请求全部完毕，不影响其他请求
          *  类似于加载队列，只有前一个请求完毕才开始下一个
@@ -120,6 +117,8 @@ function getCitys (url, arr, level, text, callback) {
         })
     });
 }
+
+
 // 初次调用 获取->省
 console.time('程序结束共耗时：');
 getCitys(city_url + 'index.html', arrAll, 1, '中国');
@@ -139,6 +138,10 @@ function write (contents) {
     });
 }
 
+function randomNum (minNum, maxNum) {
+    return parseInt(Math.random() * (maxNum - minNum + 1) + minNum, 10);
+}
+
 writeLog('-------------------------------------------------------');
 // 写入日志
 function writeLog (contents) {
@@ -147,7 +150,7 @@ function writeLog (contents) {
             console.error(err);
             process.exit(1);
         } else {
-            console.log('create log + ！')
+            // console.log('create log + ！')
         }
     });
 }
